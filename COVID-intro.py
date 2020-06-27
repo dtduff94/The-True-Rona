@@ -8,6 +8,9 @@ git clone https://github.com/CSSEGISandData/COVID-19
 
 import pandas as pd
 import glob
+import matplotlib.pyplot as plt
+import datetime
+import plotly_express
 
 path = '/Users/jasonrubenstein/Desktop/Python/covid/COVID-19/csse_covid_19_data/csse_covid_19_daily_reports_us/*.csv'
 covid_files = glob.glob(path)
@@ -56,4 +59,30 @@ def daily_data(df):
     del df['Prev_Hospitalizations'], df['Prev_Deaths'], df['Prev_Cases'], df['Prev_Tests']
     df = df[(df['Last_Update'] > "2020-04-13")]
     return df
+
+
+def kpis(df):
+    df['Positivity_Rate'] = df['Daily_Cases'] / df['Daily_Tests']
+    return df
+
+
+covid_data = to_ints(covid_data)
+covid_data = shift_data(covid_data)
+covid_data = daily_data(covid_data)
+covid_data = kpis(covid_data)
+
+
+states = ["New York", "California", "Massachusetts", "Texas", "Alabama", "North Carolina", "South Carolina",
+          "Florida", "New Jersey"]
+plot_data = covid_data[(covid_data['Province_State'].isin(states))]
+
+plot_data["Last_Update"] = pd.to_datetime(plot_data["Last_Update"]).dt.date
+
+plot_data.rename(columns={'Last_Update': 'Date'}, inplace=True)
+
+plot_data = plot_data[(plot_data['Positivity_Rate'] < 1)]
+fig = plotly_express.scatter(plot_data, x="Date", y="Positivity_Rate", color="Province_State",
+                             hover_data=['Date', 'Province_State']).\
+    update_traces(mode="lines+markers")
+fig.show()
 
