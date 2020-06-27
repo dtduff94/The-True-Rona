@@ -1,5 +1,9 @@
 """
 Researching COVID
+
+To get data from cmd line use following:
+
+git clone https://github.com/CSSEGISandData/COVID-19
 """
 
 import pandas as pd
